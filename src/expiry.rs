@@ -55,14 +55,13 @@ pub(crate) trait WriteExpiry: io::Write {
     ///
     /// Otherwise, when the underlying writer fails, this method returns the error.
     fn write_expiry(&mut self, expiry: DateTime<Utc>) -> io::Result<()> {
-        let min = DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc);
+        let min = Utc.from_utc_datetime(&NaiveDateTime::from_timestamp(0, 0));
         // If the expiry exceeds this instant, the timestamp overflows.
-        let max = DateTime::<Utc>::from_utc(
-            NaiveDateTime::from_timestamp(
+        let max = Utc.from_utc_datetime(
+            &NaiveDateTime::from_timestamp(
                 i64::max_value() / NANOS_IN_SEC,
                 (i64::max_value() % NANOS_IN_SEC) as u32,
-            ),
-            Utc,
+            )
         );
         if expiry < min || max < expiry {
             return Err(io::ErrorKind::InvalidData.into());
